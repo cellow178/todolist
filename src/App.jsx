@@ -1,14 +1,35 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+const STORAGE_KEY = "studymaxxing_todos";
 
 function App() {
-  const [todos, setTodos] = useState([]);
+  const [todos, setTodos] = useState(() => {
+    if (typeof window === "undefined") return [];
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    try {
+      return saved ? JSON.parse(saved) : [];
+    } catch (error) {
+      console.error("Failed to parse todos from localStorage:", error);
+      return [];
+    }
+  });
+
   const [input, setInput] = useState("");
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    } catch (error) {
+      console.error("Failed to save todos to localStorage:", error);
+    }
+  }, [todos]);
 
   const addTodo = (e) => {
     e.preventDefault();
     if (input.trim()) {
       setTodos([...todos, { id: Date.now(), text: input.trim(), completed: false }]);
-      setInput("");
+      setInput(""); 
     }
   };
 
